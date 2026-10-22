@@ -10,11 +10,7 @@ export function flatten(entries) {
 export function filterSightings(items, filters) {
   const q = filters.search.toLowerCase().trim();
   return items.filter(({entry:e,sighting:s}) =>
-    (!q || [e.title,e.episodeTitle,e.description,s.caption,...(s.instruments||[])].join(' ').toLowerCase().includes(q)) &&
-    (!filters.instrument || s.instruments?.includes(filters.instrument)) &&
-    (!filters.type || e.type === filters.type) &&
-    (!filters.genre || e.genres?.includes(filters.genre)) &&
-    (!filters.decade || (Number(e.year) && String(Math.floor(Number(e.year)/10)*10) === filters.decade)));
+    !q || [e.title,e.episodeTitle,e.description,s.caption,s.credit,s.sourceNote,...(s.instruments||[])].join(' ').toLowerCase().includes(q));
 }
 function node(tag, text, className) { const n=document.createElement(tag); if(text!==undefined)n.textContent=text;if(className)n.className=className;return n; }
 function mediaType(e){return ({movie:'MOVIE',tv:'TV EPISODE',other:'OTHER'})[e.type]||'OTHER';}
@@ -24,11 +20,8 @@ async function start(){
   try {const r=await fetch('data/catalog.json',{cache:'no-cache'});if(!r.ok)throw Error('Archive unavailable');catalog=await r.json();items=flatten(catalog.entries||[]);}catch{$('error').hidden=false;$('total').textContent='Archive temporarily unavailable';return;}
   const submissionUrl=safeUrl(catalog.submissionUrl);
   if(submissionUrl){document.querySelectorAll('[data-submit]').forEach(a=>{a.href=submissionUrl;a.target='_blank';a.rel='noopener noreferrer';a.hidden=false;});$('setup-note').hidden=true;}
-  for(const [id,values] of [['genre',[...new Set(items.flatMap(x=>x.entry.genres||[]))].sort()],['decade',[...new Set(items.map(x=>Number(x.entry.year)).filter(Boolean).map(y=>Math.floor(y/10)*10))].sort((a,b)=>b-a)]]){
-    for(const value of values){const option=node('option',id==='decade'?`${value}s`:value);option.value=value;$(id).append(option);}
-  }
   $('total').textContent=`${items.length} sighting${items.length===1?'':'s'} · ${new Set(items.map(x=>x.entry.id)).size} movies, episodes & other discoveries`;
-  function currentFilters(){return Object.fromEntries(['search','instrument','type','genre','decade'].map(k=>[k,$(k).value]));}
+  function currentFilters(){return {search:$('search').value};}
   function render(){
     const f=currentFilters();visible=filterSightings(items,f);$('gallery').replaceChildren();$('empty').hidden=items.length!==0;$('no-results').hidden=items.length===0||visible.length!==0;$('clear').hidden=!Object.values(f).some(Boolean);$('random').disabled=visible.length===0;
     $('result-count').textContent=items.length?`${visible.length} of ${items.length} sightings`:'';

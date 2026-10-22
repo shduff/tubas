@@ -5,7 +5,7 @@
   <meta name="theme-color" content="#f2efdf">
   <meta name="description" content="A growing, friend-made collection of sousaphones, tubas, euphoniums, and baritone horns spotted on screen.">
   <title>Sousaphones Are Everywhere</title>
-  <link rel="stylesheet" href="style.css?v=2"><script src="app.js" type="module"></script>
+  <link rel="stylesheet" href="style.css?v=3"><script src="app.js?v=3" type="module"></script>
 </head>
 <body>
   <a class="skip" href="#collection">Skip to sightings</a>
@@ -19,15 +19,11 @@
       <div class="section-heading"><div><span class="eyebrow">THE SIGHTINGS</span><p id="total">Opening the archive…</p></div><button id="random" class="text-button" disabled>Surprise me <span aria-hidden="true">↗</span></button></div>
       <form id="filters" class="filters" role="search">
         <label class="search-label"><span class="sr-only">Search titles and captions</span><input id="search" type="search" placeholder="Search the evidence…" autocomplete="off"></label>
-        <label><span class="sr-only">Instrument</span><select id="instrument"><option value="">Any instrument</option><option>Sousaphone</option><option>Tuba</option><option>Euphonium</option><option>Baritone horn</option><option>Uncertain</option></select></label>
-        <label><span class="sr-only">Media type</span><select id="type"><option value="">Film + television + more</option><option value="movie">Movies</option><option value="tv">TV episodes</option><option value="other">Other</option></select></label>
-        <label><span class="sr-only">Genre</span><select id="genre"><option value="">Any genre</option></select></label>
-        <label><span class="sr-only">Decade</span><select id="decade"><option value="">Any decade</option></select></label>
       </form>
-      <div class="results-bar"><p id="result-count" aria-live="polite"></p><button id="clear" class="text-button" hidden>Clear filters ×</button></div>
+      <div class="results-bar"><p id="result-count" aria-live="polite"></p><button id="clear" class="text-button" hidden>Clear search ×</button></div>
       <div id="gallery" class="gallery"></div>
       <div id="empty" class="empty" hidden><span class="frame-corner" aria-hidden="true">＋</span><p class="eyebrow">ROLL 01 / FRAME 001</p><h2>Every claim needs<br>a little evidence.</h2><p>The archive is ready for its first sighting.<br>A parade scene is an excellent place to start.</p><a data-submit class="button" hidden>Send the first sighting ↗</a><p id="setup-note" class="small">The submission form is being connected. Check back soon.</p></div>
-      <div id="no-results" class="empty" hidden><h2>No sightings here.<br><em>Yet.</em></h2><p>Try another filter, or contribute the missing evidence.</p></div>
+      <div id="no-results" class="empty" hidden><h2>No sightings here.<br><em>Yet.</em></h2><p>Try another search, or contribute the missing evidence.</p></div>
       <p id="error" class="error" role="alert" hidden>The archive couldn’t load. Please refresh to try again.</p>
     </section>
     <section class="invitation"><span class="eyebrow">KEEP YOUR EYES OPEN.</span><h2>Spotted one?</h2><p>A starring role. A passing parade. Three pixels of a bell in the background.<br>Send us your discovery. We’ll take a look and add it to the collection.</p><a data-submit class="button" hidden>Submit a sighting ↗</a><p class="small">No screenshot? A tip is welcome, too. Every submission is reviewed before publication.</p></section>
