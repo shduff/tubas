@@ -6,10 +6,9 @@ const SAE = {
   repo: 'shduff/tubas', branch: 'main', site: 'https://shaunalynn.org/tubas/',
   sheet: 'Review queue', catalog: 'data/catalog.json', maxFileBytes: 10 * 1024 * 1024,
   maxSubmissionBytes: 20 * 1024 * 1024,
-  headers: ['Approved', 'Status', 'Submission ID', 'Submitted', 'Title', 'Type', 'Year',
-    'Season', 'Episode', 'Episode title', 'Genres', 'Instruments', 'Timestamp', 'Caption',
-    'Credit', 'Contact email (private)', 'Source note', 'Source URL', 'File IDs (private)',
-    'Existing entry ID', 'Published URL', 'Last error'],
+  headers: ['Approved', 'Status', 'Title', 'Images or clips', 'Caption', 'Credit',
+    'Contact email', 'Anything else?', 'Published URL', 'Last error',
+    'Submission ID', 'Submitted', 'File IDs (private)', 'Existing entry ID'],
   genres: ['Action', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
     'Horror', 'Musical', 'Mystery', 'Romance', 'Science fiction', 'Thriller', 'Western', 'Other'],
   instruments: ['Sousaphone', 'Tuba', 'Euphonium', 'Baritone horn', 'Uncertain']
@@ -50,7 +49,8 @@ function setup() {
     sheet.getRange(1, 1, 1, SAE.headers.length).setBackground('#222b21').setFontColor('#f2efdf').setFontWeight('bold');
     sheet.getRange(2, 3, sheet.getMaxRows() - 1, SAE.headers.length - 2).setNumberFormat('@');
     sheet.setColumnWidths(1, SAE.headers.length, 150);
-    sheet.setColumnWidth(5, 230); sheet.setColumnWidth(14, 320);
+    sheet.setColumnWidth(3, 230); sheet.setColumnWidth(5, 320);
+    sheet.hideColumns(11, 4);
   }
   // Also configure a review queue imported from the prepared workbook.
   sheet.getRange(2, 1, sheet.getMaxRows() - 1, 1).setDataValidation(
@@ -84,7 +84,7 @@ function captureSubmission(event) {
 function captureResponse_(response) {
   const sheet = sheet_(), id = String(response.getId());
   const rows = sheet.getDataRange().getValues();
-  if (rows.slice(1).some(r => String(r[2]) === id)) return;
+  if (rows.slice(1).some(r => String(r[SAE.headers.indexOf('Submission ID')]) === id)) return;
   const answers = {}, files = [];
   response.getItemResponses().forEach(r => {
     if (r.getItem().getType().toString() === 'FILE_UPLOAD') {
@@ -93,17 +93,19 @@ function captureResponse_(response) {
     } else { const v = r.getResponse(); answers[r.getItem().getTitle()] = Array.isArray(v) ? v.join(', ') : String(v || ''); }
   });
   answers.Type = answers.Type || 'Other';
-  answers['Contact email (private)'] = answers['Contact email'] || answers.Email || answers['Contact email (private)'] || '';
-  answers['Source note'] = answers['Anything else?'] || answers['Source note'] || '';
+  answers['Contact email'] = answers['Contact email'] || answers.Email || answers['Contact email (private)'] || '';
+  answers['Anything else?'] = answers['Anything else?'] || answers['Source note'] || '';
+  answers['Images or clips'] = files.map((_,i) => 'File ' + (i+1)).join('\n');
   answers['Submission ID'] = id; answers.Submitted = response.getTimestamp().toISOString();
   answers['File IDs (private)'] = files.join(', ');
   answers.Status = files.length ? 'Awaiting review' : 'Needs media';
   const row = SAE.headers.map(h => h === 'Approved' ? false : plainCell_(answers[h] || ''));
   // Checkbox formatting can occupy blank rows; find actual last submission using the ID column.
-  let target = 2; while (target <= rows.length && rows[target - 1][2]) target++;
+  let target = 2; while (target <= rows.length && rows[target - 1][SAE.headers.indexOf('Submission ID')]) target++;
   if (target > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 100);
   sheet.getRange(target, 1, 1, row.length).setValues([row]);
   sheet.getRange(target, 1).insertCheckboxes();
+  mediaLinks_(sheet, target, files);
 }
 function importResponses() {
   const lock = LockService.getScriptLock(); lock.waitLock(30000);
@@ -151,7 +153,7 @@ function hash_(value) {
     .map(b => ('0' + ((b + 256) % 256).toString(16)).slice(-2)).join('').slice(0, 20);
 }
 function canonical_(r) {
-  return [String(r.Title || '').normalize('NFKC').trim().toLowerCase(), r.Type, r.Year,
+  return [String(r.Title || '').normalize('NFKC').trim().toLowerCase(), r.Type || 'Other', r.Year,
     r.Season, r.Episode, String(r['Episode title'] || '').trim().toLowerCase()].join('|');
 }
 function publishApproved() {
@@ -160,7 +162,7 @@ function publishApproved() {
   try {
     const sheet = sheet_(), values = sheet.getDataRange().getValues();
     for (let i = 1; i < values.length; i++) {
-      if (values[i][0] !== true || !values[i][2] || values[i][1] === 'Published') continue;
+      if (values[i][0] !== true || !values[i][SAE.headers.indexOf('Submission ID')] || values[i][1] === 'Published') continue;
       const row = i + 1, r = {};
       SAE.headers.forEach((h,j) => r[h] = values[i][j]);
       try {
@@ -178,7 +180,7 @@ function publishApproved() {
 function publishRow_(r) {
   if (!String(r.Title || '').trim()) throw new Error('A title is required.');
   const types = {'Movie':'movie','TV episode':'tv','Other':'other'};
-  const type = types[r.Type]; if (!type) throw new Error('Choose Movie, TV episode, or Other in Type.');
+  const type = types[r.Type || 'Other']; if (!type) throw new Error('Choose Movie, TV episode, or Other in Type.');
   if (type === 'tv' && !String(r.Episode || '').trim() && !String(r['Episode title'] || '').trim()) throw new Error('Identify the episode with an episode title or number before publishing.');
   const year = String(r.Year || '').trim();
   if (year && !/^\d{4}$/.test(year)) throw new Error('Year must be four digits or blank.');
@@ -214,7 +216,7 @@ function publishRow_(r) {
     media.push({kind:f.mime.startsWith('video/')?'video':'image',url:path,alt:String(r.Caption||('Low brass spotted in '+r.Title))});
   });
   // Explicit allowlist: no private email, Drive IDs, raw form IDs, or review notes enter the public catalog.
-  entry.sightings.push({id:id,instruments:list_(r.Instruments).filter(v=>SAE.instruments.includes(v)),timestamp:String(r.Timestamp||''),caption:String(r.Caption||''),credit:String(r.Credit||''),sourceNote:String(r['Source note']||''),sourceUrl:safeSource_(r['Source URL']),media:media});
+  entry.sightings.push({id:id,instruments:list_(r.Instruments).filter(v=>SAE.instruments.includes(v)),timestamp:String(r.Timestamp||''),caption:String(r.Caption||''),credit:String(r.Credit||''),sourceNote:String(r['Anything else?']||r['Source note']||''),sourceUrl:safeSource_(r['Source URL']),media:media});
   commitCatalog_(state, tree, 'Publish approved sighting: ' + String(r.Title).replace(/[\r\n]/g,' ').slice(0,100));
   return SAE.site + '#sighting=' + id;
 }
@@ -224,4 +226,23 @@ function publishFormLink() {
   const lock = LockService.getScriptLock(); lock.waitLock(30000);
   try { const state=loadCatalog_();state.catalog.submissionUrl=form.getPublishedUrl();commitCatalog_(state,[],'Connect submission form'); }
   finally { lock.releaseLock(); }
+}
+
+function mediaLinks_(sheet, row, ids) {
+  if (!ids.length) return;
+  const labels = ids.map((_,i) => 'File ' + (i+1));
+  const rich = SpreadsheetApp.newRichTextValue().setText(labels.join('\n'));
+  let start = 0;
+  ids.forEach((id,i) => {
+    rich.setLinkUrl(start, start + labels[i].length, 'https://drive.google.com/file/d/' + encodeURIComponent(id) + '/view');
+    start += labels[i].length + 1;
+  });
+  sheet.getRange(row, SAE.headers.indexOf('Images or clips') + 1).setRichTextValue(rich.build());
+}
+function reviewRecord_(headers, values) {
+  const r = {}; headers.forEach((h,i) => r[h] = values[i]);
+  r['Contact email'] = r['Contact email'] || r['Contact email (private)'] || r.Email || '';
+  r['Anything else?'] = r['Anything else?'] || r['Source note'] || '';
+  r['Images or clips'] = list_(r['File IDs (private)']).map((_,i) => 'File ' + (i+1)).join('\n');
+  return r;
 }
