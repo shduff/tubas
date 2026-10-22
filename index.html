@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f2efdf">
+  <meta name="description" content="A growing, friend-made collection of sousaphones, tubas, euphoniums, and baritone horns spotted on screen.">
+  <title>Sousaphones Are Everywhere</title>
+  <link rel="stylesheet" href="style.css"><script src="app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip" href="#collection">Skip to sightings</a>
+  <header class="topbar"><a class="wordmark" href="./" aria-label="Sousaphones Are Everywhere home">SAE<span class="dot">●</span></a><span class="edition">AN ONGOING INVESTIGATION</span><a class="submit-link" data-submit hidden>Submit a sighting <span aria-hidden="true">↗</span></a></header>
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <div class="intro-title"><p class="eyebrow">THE EVIDENCE IS MOUNTING.</p><h1 id="title">Sousaphones<br>are <em>everywhere.</em></h1></div>
+      <div class="intro-note"><svg class="horn" viewBox="0 0 210 210" role="img" aria-label="Illustration of a sousaphone"><g fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M141 73c-70-23-111 45-84 94 24 43 95 32 105-11 6-27-11-55-40-54-22 0-37 17-34 36 4 25 37 29 45 9"/><path d="M119 102l14-42m-13 10c-9-13-13-27-10-39 19 17 49 26 76 21-5 14-16 25-29 32z"/><ellipse cx="148" cy="40" rx="40" ry="14" transform="rotate(18 148 40)"/><path d="M131 146V120h28m-42 8h29m-41 9h25m-4-18v25m11-25v25"/></g></svg><p>You’re watching a movie.<br>There, in the background.<br><strong>Another sousaphone.</strong></p><p class="small">A collective record of low brass on screen. Tubas, euphoniums, and baritones welcome, too.</p></div>
+    </section>
+    <section id="collection" aria-label="The collection">
+      <div class="section-heading"><div><span class="eyebrow">THE SIGHTINGS</span><p id="total">Opening the archive…</p></div><button id="random" class="text-button" disabled>Surprise me <span aria-hidden="true">↗</span></button></div>
+      <form id="filters" class="filters" role="search">
+        <label class="search-label"><span class="sr-only">Search titles and captions</span><input id="search" type="search" placeholder="Search the evidence…" autocomplete="off"></label>
+        <label><span class="sr-only">Instrument</span><select id="instrument"><option value="">Any instrument</option><option>Sousaphone</option><option>Tuba</option><option>Euphonium</option><option>Baritone horn</option><option>Uncertain</option></select></label>
+        <label><span class="sr-only">Media type</span><select id="type"><option value="">Film + television + more</option><option value="movie">Movies</option><option value="tv">TV episodes</option><option value="other">Other</option></select></label>
+        <label><span class="sr-only">Genre</span><select id="genre"><option value="">Any genre</option></select></label>
+        <label><span class="sr-only">Decade</span><select id="decade"><option value="">Any decade</option></select></label>
+      </form>
+      <div class="results-bar"><p id="result-count" aria-live="polite"></p><button id="clear" class="text-button" hidden>Clear filters ×</button></div>
+      <div id="gallery" class="gallery"></div>
+      <div id="empty" class="empty" hidden><span class="frame-corner" aria-hidden="true">＋</span><p class="eyebrow">ROLL 01 / FRAME 001</p><h2>Every claim needs<br>a little evidence.</h2><p>The archive is ready for its first sighting.<br>A parade scene is an excellent place to start.</p><a data-submit class="button" hidden>Send the first sighting ↗</a><p id="setup-note" class="small">The submission form is being connected. Check back soon.</p></div>
+      <div id="no-results" class="empty" hidden><h2>No sightings here.<br><em>Yet.</em></h2><p>Try another filter, or contribute the missing evidence.</p></div>
+      <p id="error" class="error" role="alert" hidden>The archive couldn’t load. Please refresh to try again.</p>
+    </section>
+    <section class="invitation"><span class="eyebrow">KEEP YOUR EYES OPEN.</span><h2>Spotted one?</h2><p>A starring role. A passing parade. Three pixels of a bell in the background.<br>Send us your discovery. We’ll take a look and add it to the collection.</p><a data-submit class="button" hidden>Submit a sighting ↗</a><p class="small">No screenshot? A tip is welcome, too. Every submission is reviewed before publication.</p></section>
+  </main>
+  <footer><a class="wordmark" href="./">SAE<span class="dot">●</span></a><p>A small project. A very large instrument.</p><span>SOUSAPHONES ARE EVERYWHERE</span></footer>
+  <dialog id="detail" aria-labelledby="detail-title"><div class="dialog-top"><span class="eyebrow">EXHIBIT <span id="detail-number"></span></span><button id="close" class="text-button" aria-label="Close sighting">Close ×</button></div><div id="detail-media"></div><div class="detail-body"><p id="detail-meta" class="eyebrow"></p><h2 id="detail-title"></h2><p id="detail-episode"></p><p id="detail-caption"></p><div id="detail-tags" class="tags"></div><p id="detail-credit" class="small"></p><p id="detail-source"></p><div class="detail-navigation"><button id="previous" class="text-button">← Previous sighting</button><button id="next" class="text-button">Next sighting →</button></div><div id="related"></div></div></dialog>
+</body>
+</html>
