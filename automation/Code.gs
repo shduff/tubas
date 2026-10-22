@@ -66,7 +66,7 @@ function setup() {
     form.addTextItem().setTitle('Title').setHelpText('Movie title, or show name for television.').setRequired(true);
     form.addParagraphTextItem().setTitle('Caption').setHelpText('Where is the instrument? Context, commentary, and jokes welcome.');
     form.addTextItem().setTitle('Credit').setHelpText('Optional name or handle to show publicly.');
-    form.addTextItem().setTitle('Email').setHelpText('Only if you want us to be able to follow up.');
+    form.addTextItem().setTitle('Contact email').setHelpText('Only if you want us to be able to follow up.');
     form.addParagraphTextItem().setTitle('Anything else?').setHelpText('A timestamp, an episode name, a link to the scene, or a detail we should look for?');
   }
   const existing = ScriptApp.getProjectTriggers().map(t => t.getHandlerFunction());
@@ -93,7 +93,7 @@ function captureResponse_(response) {
     } else { const v = r.getResponse(); answers[r.getItem().getTitle()] = Array.isArray(v) ? v.join(', ') : String(v || ''); }
   });
   answers.Type = answers.Type || 'Other';
-  answers['Contact email (private)'] = answers.Email || answers['Contact email (private)'] || '';
+  answers['Contact email (private)'] = answers['Contact email'] || answers.Email || answers['Contact email (private)'] || '';
   answers['Source note'] = answers['Anything else?'] || answers['Source note'] || '';
   answers['Submission ID'] = id; answers.Submitted = response.getTimestamp().toISOString();
   answers['File IDs (private)'] = files.join(', ');
