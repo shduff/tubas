@@ -58,29 +58,22 @@ function setup() {
   let form;
   if (p.getProperty('FORM_ID')) { form = FormApp.openById(p.getProperty('FORM_ID')); }
   else {
-    form = FormApp.create('Sousaphones Are Everywhere — Submit a sighting');
+    form = FormApp.create('Sousaphones Are Everywhere');
     p.setProperty('FORM_ID', form.getId());
-    form.setDescription('Spotted a sousaphone, tuba, euphonium, or baritone on screen? Send the evidence! We review every contribution. No screenshot? Send a lead. Your name and contact email are optional. Approved images and details will be published on the website; contact email stays private. File uploads require Google sign-in.');
+    form.setDescription('Spotted a sousaphone, tuba, euphonium, or baritone on screen? Submit a sighting!\n\nFile uploads require a Google sign-in.');
     form.setCollectEmail(false).setLimitOneResponsePerUser(false);
     form.setConfirmationMessage('Thanks for keeping your eyes open! Your sighting is in the private review queue.');
     form.addTextItem().setTitle('Title').setHelpText('Movie title, or show name for television.').setRequired(true);
-    form.addMultipleChoiceItem().setTitle('Type').setChoiceValues(['Movie', 'TV episode', 'Other']).setRequired(true);
     form.addParagraphTextItem().setTitle('Caption').setHelpText('Where is the instrument? Context, commentary, and jokes welcome.');
-    form.addCheckboxItem().setTitle('Instruments').setChoiceValues(SAE.instruments);
-    form.addTextItem().setTitle('Timestamp').setHelpText('Optional, e.g. 00:42:10 or 00:42:10–00:42:18. Different editions may vary.');
     form.addTextItem().setTitle('Credit').setHelpText('Optional name or handle to show publicly.');
-    form.addTextItem().setTitle('Contact email (private)').setHelpText('Optional, only if you want us to be able to follow up. Never published.');
-    form.addSectionHeaderItem().setTitle('Extra details — all optional');
-    ['Year', 'Season', 'Episode', 'Episode title'].forEach(t => form.addTextItem().setTitle(t));
-    form.addCheckboxItem().setTitle('Genres').setChoiceValues(SAE.genres);
-    form.addTextItem().setTitle('Source note').setHelpText('Where you watched it; edition or cut, if relevant.');
-    form.addTextItem().setTitle('Source URL').setHelpText('Optional link to the source or scene.');
+    form.addTextItem().setTitle('Email').setHelpText('Only if you want us to be able to follow up.');
+    form.addParagraphTextItem().setTitle('Anything else?').setHelpText('A timestamp, an episode name, a link to the scene, or a detail we should look for?');
   }
   const existing = ScriptApp.getProjectTriggers().map(t => t.getHandlerFunction());
   if (!existing.includes('captureSubmission')) ScriptApp.newTrigger('captureSubmission').forForm(form).onFormSubmit().create();
   if (!existing.includes('reviewEdited')) ScriptApp.newTrigger('reviewEdited').forSpreadsheet(ss).onEdit().create();
   console.log('Review queue ready. Form editor:\n' + form.getEditUrl() +
-    '\n\nAdd an optional File upload question named “Images or clips”. Allow multiple images and short videos, up to 10 MB per file. Google requires this question to be added in the form editor.\n\nStore a repository-scoped GitHub token as GITHUB_TOKEN in Script Properties, with Contents: read and write for shduff/tubas. Then choose “Connect form link to website”.');
+    '\n\nAdd a required File upload question named “Images or clips”. Allow multiple images and short videos, up to 10 MB per file. Google requires this question to be added in the form editor.\n\nStore a repository-scoped GitHub token as GITHUB_TOKEN in Script Properties, with Contents: read and write for shduff/tubas. Then choose “Connect form link to website”.');
 }
 
 function captureSubmission(event) {
@@ -99,6 +92,9 @@ function captureResponse_(response) {
       (Array.isArray(result) ? result : [result]).filter(Boolean).forEach(f => files.push(String(f)));
     } else { const v = r.getResponse(); answers[r.getItem().getTitle()] = Array.isArray(v) ? v.join(', ') : String(v || ''); }
   });
+  answers.Type = answers.Type || 'Other';
+  answers['Contact email (private)'] = answers.Email || answers['Contact email (private)'] || '';
+  answers['Source note'] = answers['Anything else?'] || answers['Source note'] || '';
   answers['Submission ID'] = id; answers.Submitted = response.getTimestamp().toISOString();
   answers['File IDs (private)'] = files.join(', ');
   answers.Status = files.length ? 'Awaiting review' : 'Needs media';
