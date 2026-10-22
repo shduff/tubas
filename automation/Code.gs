@@ -3,7 +3,7 @@
  * Store GITHUB_TOKEN in Script Properties, not in source code or a spreadsheet cell.
  */
 const SAE = {
-  repo: 'shduff/tubas', branch: 'main', site: 'https://shduff.github.io/tubas/',
+  repo: 'shduff/tubas', branch: 'main', site: 'https://shaunalynn.org/tubas/',
   sheet: 'Review queue', catalog: 'data/catalog.json', maxFileBytes: 10 * 1024 * 1024,
   maxSubmissionBytes: 20 * 1024 * 1024,
   headers: ['Approved', 'Status', 'Submission ID', 'Submitted', 'Title', 'Type', 'Year',
@@ -79,7 +79,7 @@ function setup() {
   const existing = ScriptApp.getProjectTriggers().map(t => t.getHandlerFunction());
   if (!existing.includes('captureSubmission')) ScriptApp.newTrigger('captureSubmission').forForm(form).onFormSubmit().create();
   if (!existing.includes('reviewEdited')) ScriptApp.newTrigger('reviewEdited').forSpreadsheet(ss).onEdit().create();
-  SpreadsheetApp.getUi().alert('Review queue ready. Form editor:\n' + form.getEditUrl() +
+  console.log('Review queue ready. Form editor:\n' + form.getEditUrl() +
     '\n\nAdd an optional File upload question named “Images or clips”. Allow multiple images and short videos, up to 10 MB per file. Google requires this question to be added in the form editor.\n\nStore a repository-scoped GitHub token as GITHUB_TOKEN in Script Properties, with Contents: read and write for shduff/tubas. Then choose “Connect form link to website”.');
 }
 
