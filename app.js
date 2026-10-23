@@ -1,10 +1,4 @@
 const $ = id => document.getElementById(id);
-// Separate previews keep the publisher's catalog and the uploaded originals intact.
-const thumbnailPreviews = {
-  'media/s-39d456441c79e742cf33/01.jpg': 'preview-freaks-and-geeks.png',
-  'media/s-aaaa897041063813edab/01.jpg': 'preview-cameraperson.png',
-  'media/s-fcc440b0e7200aa9000b/01.jpg': 'preview-a-hidden-life.png'
-};
 export function safeUrl(value) {
   if (typeof value !== 'string' || !value.trim()) return '';
   try { const u = new URL(value, globalThis.location?.href || 'https://example.com/'); return ['https:', 'http:'].includes(u.protocol) ? u.href : ''; } catch { return ''; }
@@ -38,8 +32,8 @@ async function start(){
       const {entry:e,sighting:s}=item;const button=node('button',undefined,'card');button.type='button';
       const frame=node('div',undefined,'card-image');const cover=s.media.find(m=>m.kind==='image'&&safeUrl(m.url))||s.media.find(m=>safeUrl(m.poster));
       if(cover){const img=node('img');img.src=safeUrl(cover.poster||cover.url);img.alt=cover.alt||s.caption||`Low brass spotted in ${e.title}`;img.loading='lazy';frame.append(img);
-        const previewUrl=thumbnailPreviews[cover.poster||cover.url];
-        if(previewUrl){const preview=node('img',undefined,'card-preview');preview.alt='';preview.setAttribute('aria-hidden','true');preview.loading='lazy';preview.addEventListener('error',()=>preview.remove(),{once:true});preview.src=previewUrl;frame.append(preview);}
+        // Filter the same upload in the browser; new sightings need no generated asset.
+        const preview=node('img',undefined,'card-preview');preview.alt='';preview.setAttribute('aria-hidden','true');preview.loading='lazy';preview.addEventListener('error',()=>preview.remove(),{once:true});preview.src=img.src;frame.append(preview);
       }else{frame.append(node('p','▶ Play clip'));}
       frame.append(node('span',`NO. ${String(items.indexOf(item)+1).padStart(3,'0')}`,'card-number'));
       if(s.media.length>1||s.media.some(m=>m.kind==='video'))frame.append(node('span',s.media.some(m=>m.kind==='video')?'▶ CLIP':`${s.media.length} IMAGES`,'card-badge'));
