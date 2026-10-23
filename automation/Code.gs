@@ -8,7 +8,7 @@ const SAE = {
   maxSubmissionBytes: 20 * 1024 * 1024,
   headers: ['Approved', 'Status', 'Title', 'Images or clips', 'Caption', 'Credit',
     'Contact email', 'Anything else?', 'Published URL', 'Last error',
-    'Submission ID', 'Submitted', 'File IDs (private)', 'Existing entry ID'],
+    'Submission ID', 'Submitted', 'File IDs (private)', 'Existing entry ID', 'Tag', 'Film URL'],
   genres: ['Action', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
     'Horror', 'Musical', 'Mystery', 'Romance', 'Science fiction', 'Thriller', 'Western', 'Other'],
   instruments: ['Sousaphone', 'Tuba', 'Euphonium', 'Baritone horn', 'Uncertain']
@@ -20,6 +20,7 @@ function onOpen() {
     .addItem('Publish approved submissions', 'publishApproved')
     .addItem('Connect form link to website', 'publishFormLink')
     .addItem('Import missed form responses', 'importResponses')
+    .addItem('Sync tags and film links to website', 'syncPublicMetadata')
     .addToUi();
 }
 
@@ -50,7 +51,7 @@ function setup() {
     sheet.getRange(2, 3, sheet.getMaxRows() - 1, SAE.headers.length - 2).setNumberFormat('@');
     sheet.setColumnWidths(1, SAE.headers.length, 150);
     sheet.setColumnWidth(3, 230); sheet.setColumnWidth(5, 320);
-    sheet.hideColumns(11, 4);
+    sheet.hideColumns(9, 6);
   }
   // Also configure a review queue imported from the prepared workbook.
   sheet.getRange(2, 1, sheet.getMaxRows() - 1, 1).setDataValidation(
@@ -64,6 +65,7 @@ function setup() {
     form.setCollectEmail(false).setLimitOneResponsePerUser(false);
     form.setConfirmationMessage('Thanks for keeping your eyes open! Your sighting is in the private review queue.');
     form.addTextItem().setTitle('Title').setHelpText('Movie title, or show name for television.').setRequired(true);
+    form.addMultipleChoiceItem().setTitle('Tag').setChoiceValues(['tuba','non-tuba-brass']).setHelpText('Tuba includes sousaphones. Non-tuba-brass includes euphoniums, baritones, and other brass.').setRequired(true);
     form.addParagraphTextItem().setTitle('Caption').setHelpText('Where is the instrument? Context, commentary, and jokes welcome.');
     form.addTextItem().setTitle('Credit').setHelpText('Optional name or handle to show publicly.');
     form.addTextItem().setTitle('Contact email').setHelpText('Only if you want us to be able to follow up.');
@@ -93,6 +95,7 @@ function captureResponse_(response) {
     } else { const v = r.getResponse(); answers[r.getItem().getTitle()] = Array.isArray(v) ? v.join(', ') : String(v || ''); }
   });
   answers.Type = answers.Type || 'Other';
+  answers.Tag = brassTag_(answers.Tag || 'tuba');
   answers['Contact email'] = answers['Contact email'] || answers.Email || answers['Contact email (private)'] || '';
   answers['Anything else?'] = answers['Anything else?'] || answers['Source note'] || '';
   answers['Images or clips'] = files.map((_,i) => 'File ' + (i+1)).join('\n');
@@ -115,6 +118,7 @@ function importResponses() {
 function reviewEdited(event) {
   if (!event || !event.range || event.range.getSheet().getName() !== SAE.sheet) return;
   if (event.range.getColumn() <= 1 && event.range.getLastColumn() >= 1) publishApproved();
+  else if (event.range.getLastColumn() >= SAE.headers.indexOf('Tag') + 1) syncPublicMetadata();
 }
 
 function github_(method, path, body) {
@@ -184,6 +188,7 @@ function publishRow_(r) {
   if (type === 'tv' && !String(r.Episode || '').trim() && !String(r['Episode title'] || '').trim()) throw new Error('Identify the episode with an episode title or number before publishing.');
   const year = String(r.Year || '').trim();
   if (year && !/^\d{4}$/.test(year)) throw new Error('Year must be four digits or blank.');
+  const tag = brassTag_(r.Tag || 'tuba');
   const id = 's-' + hash_(String(r['Submission ID'])), state = loadCatalog_();
   // If the commit succeeded but the sheet update failed, retry without duplicate media or sightings.
   if (state.catalog.entries.some(e => (e.sightings || []).some(s => s.id === id))) return SAE.site + '#sighting=' + id;
@@ -198,6 +203,7 @@ function publishRow_(r) {
     entry = {id:entryId,title:String(r.Title).trim(),type:type,year:year,season:String(r.Season||''),episode:String(r.Episode||''),episodeTitle:String(r['Episode title']||''),genres:list_(r.Genres).filter(g=>SAE.genres.includes(g)),sightings:[]};
     state.catalog.entries.push(entry);
   }
+  if (safeSource_(r['Film URL'])) entry.filmUrl = safeSource_(r['Film URL']);
   let total = 0;
   const mimeExtensions = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp','video/mp4':'mp4','video/webm':'webm'};
   // Validate the entire batch before uploading any blobs.
@@ -216,7 +222,7 @@ function publishRow_(r) {
     media.push({kind:f.mime.startsWith('video/')?'video':'image',url:path,alt:String(r.Caption||('Low brass spotted in '+r.Title))});
   });
   // Explicit allowlist: no private email, Drive IDs, raw form IDs, or review notes enter the public catalog.
-  entry.sightings.push({id:id,instruments:list_(r.Instruments).filter(v=>SAE.instruments.includes(v)),timestamp:String(r.Timestamp||''),caption:String(r.Caption||''),credit:String(r.Credit||''),sourceNote:String(r['Anything else?']||r['Source note']||''),sourceUrl:safeSource_(r['Source URL']),media:media});
+  entry.sightings.push({id:id,tag:tag,instruments:list_(r.Instruments).filter(v=>SAE.instruments.includes(v)),timestamp:String(r.Timestamp||''),caption:String(r.Caption||''),credit:String(r.Credit||''),sourceNote:String(r['Anything else?']||r['Source note']||''),sourceUrl:safeSource_(r['Source URL']),media:media});
   commitCatalog_(state, tree, 'Publish approved sighting: ' + String(r.Title).replace(/[\r\n]/g,' ').slice(0,100));
   return SAE.site + '#sighting=' + id;
 }
@@ -245,4 +251,52 @@ function reviewRecord_(headers, values) {
   r['Anything else?'] = r['Anything else?'] || r['Source note'] || '';
   r['Images or clips'] = list_(r['File IDs (private)']).map((_,i) => 'File ' + (i+1)).join('\n');
   return r;
+}
+
+
+function brassTag_(value) {
+  const tag = String(value || '').trim();
+  if (!['tuba','non-tuba-brass'].includes(tag)) throw new Error('Choose tuba or non-tuba-brass in Tag.');
+  return tag;
+}
+
+// Run once after installing this upgrade; preserves existing form questions and uploads.
+function configureBrassTags() {
+  const form = FormApp.openById(props_().getProperty('FORM_ID'));
+  let item = form.getItems().find(i => i.getTitle() === 'Tag');
+  const choice = item ? item.asMultipleChoiceItem() : form.addMultipleChoiceItem().setTitle('Tag');
+  choice.setChoiceValues(['tuba','non-tuba-brass'])
+    .setHelpText('Tuba includes sousaphones. Non-tuba-brass includes euphoniums, baritones, and other brass.')
+    .setRequired(true);
+  const title = form.getItems().find(i => i.getTitle() === 'Title');
+  if (title && choice.getIndex() !== title.getIndex() + 1) form.moveItem(choice.getIndex(), title.getIndex() + 1);
+  if (!ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'syncPublicMetadata')) {
+    ScriptApp.newTrigger('syncPublicMetadata').timeBased().everyHours(1).create();
+  }
+  syncPublicMetadata();
+  console.log('Required brass tag added; published tags and film links sync hourly.');
+}
+
+// Only these two public fields may change after publication. Other review content remains immutable.
+function syncPublicMetadata() {
+  const lock = LockService.getScriptLock(); if (!lock.tryLock(1000)) return;
+  try {
+    const rows = sheet_().getDataRange().getValues(), headers = rows[0] || [];
+    if (!headers.includes('Tag') || !headers.includes('Film URL')) return;
+    const state = loadCatalog_();
+    let changed = false;
+    rows.slice(1).forEach(values => {
+      const r = {}; headers.forEach((h,i) => r[h] = values[i]);
+      if (r.Approved !== true || r.Status !== 'Published' || !r['Submission ID']) return;
+      const id = 's-' + hash_(String(r['Submission ID']));
+      for (const entry of state.catalog.entries) {
+        const sighting = (entry.sightings || []).find(s => s.id === id);
+        if (!sighting) continue;
+        const tag = String(r.Tag || '').trim(), filmUrl = safeSource_(r['Film URL']);
+        if (['tuba','non-tuba-brass'].includes(tag) && sighting.tag !== tag) { sighting.tag = tag; changed = true; }
+        if (filmUrl && entry.filmUrl !== filmUrl) { entry.filmUrl = filmUrl; changed = true; }
+      }
+    });
+    if (changed) commitCatalog_(state, [], 'Sync approved brass tags and film links');
+  } finally { lock.releaseLock(); }
 }
