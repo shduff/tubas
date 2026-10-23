@@ -20,4 +20,4 @@ main{position:relative;z-index:1}
 
 .project-description{position:relative;z-index:1;flex-basis:100%;margin:0;font-size:13px;line-height:1.65;color:var(--muted)}
 
-.project-description span{display:block;max-width:650px;background:var(--paper)}
+.project-description span{display:block;max-width:650px}
