@@ -6,7 +6,7 @@
   <meta name="description" content="A growing, friend-made collection of sousaphones, tubas, euphoniums, and baritone horns spotted on screen.">
   <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
   <title>Sousaphones Are Everywhere</title>
-  <link rel="stylesheet" href="style.css?v=15"><script src="app.js?v=15" type="module"></script>
+  <link rel="stylesheet" href="style.css?v=16"><script src="app.js?v=16" type="module"></script>
 </head>
 <body>
   <svg class="photo-filter-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="0" height="0">
@@ -35,12 +35,12 @@
   </header>
   <main>
     <section id="collection" aria-label="The collection">
-      <div class="section-heading"><span class="eyebrow">THE SIGHTINGS</span><p id="total">Opening the archive…</p></div>
+      <div class="section-heading"><span class="eyebrow">THE SIGHTINGS</span><p id="total" aria-live="polite">Opening the archive…</p></div>
       <form id="filters" class="filters" role="search">
         <label class="search-label"><span class="sr-only">Search titles and captions</span><input id="search" type="search" placeholder="Search the evidence…" autocomplete="off"></label>
-        <fieldset class="brass-filter"><legend class="sr-only">Brass category</legend><label><input type="radio" name="tag" value="" checked><span>All</span></label><label><input type="radio" name="tag" value="tuba"><span>Tuba</span></label><label><input type="radio" name="tag" value="non-tuba-brass"><span>Non-tuba brass</span></label></fieldset>
+
       </form>
-      <div class="results-bar"><p id="result-count" aria-live="polite"></p><button id="clear" class="text-button" hidden>Clear ×</button></div>
+      <div class="results-bar"><p id="result-count"></p><button id="clear" class="text-button" hidden>Clear ×</button></div>
       <div id="gallery" class="gallery"></div>
       <div id="empty" class="empty" hidden><span class="frame-corner" aria-hidden="true">＋</span><p class="eyebrow">ROLL 01 / FRAME 001</p><h2>Every claim needs<br>a little evidence.</h2><p>The archive is ready for its first sighting.<br>A parade scene is an excellent place to start.</p><a data-submit class="button" hidden>Send the first sighting ↗</a><p id="setup-note" class="small">The submission form is being connected. Check back soon.</p></div>
       <div id="no-results" class="empty" hidden><h2>No sightings here.<br><em>Yet.</em></h2><p>Try another search, or contribute the missing evidence.</p></div>

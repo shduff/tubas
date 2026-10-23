@@ -16,18 +16,20 @@ export function filterSightings(items, filters) {
 function node(tag, text, className) { const n=document.createElement(tag); if(text!==undefined)n.textContent=text;if(className)n.className=className;return n; }
 function typeLabel(e){return ['tv','movie','other'].includes(e.type)?e.type:'';}
 function tagLabel(s){return brassTag(s)==='non-tuba-brass'?'non-tuba-brass':brassTag(s);}
-function filmLabel(url){try{return /(^|\.)imdb\.com$/.test(new URL(url).hostname)?'IMDb ↗':'Film info ↗';}catch{return 'Film info ↗';}}
+function filmLabel(url){try{return /(^|\.)imdb\.com$/.test(new URL(url).hostname)?'IMDb':'Film info';}catch{return 'Film info';}}
+function setFilmLabel(link,url){link.replaceChildren(node('span',filmLabel(url)),node('span',' ↗','external-arrow'));}
 function episode(e){return [e.season ? `Season ${e.season}`:'',e.episode ? `Episode ${e.episode}`:'',e.episodeTitle].filter(Boolean).join(' · ');}
 async function start(){
-  let catalog,items=[],visible=[],active=null,opener=null;
+  let catalog,items=[],visible=[],active=null,opener=null,activeTag='';
   try {const r=await fetch('data/catalog.json',{cache:'no-cache'});if(!r.ok)throw Error('Archive unavailable');catalog=await r.json();items=flatten(catalog.entries||[]);}catch{$('error').hidden=false;$('total').textContent='Archive temporarily unavailable';return;}
   const submissionUrl=safeUrl(catalog.submissionUrl);
   if(submissionUrl){document.querySelectorAll('[data-submit]').forEach(a=>{a.href=submissionUrl;a.target='_blank';a.rel='noopener noreferrer';a.hidden=false;});$('setup-note').hidden=true;}
-  function currentFilters(){return {search:$('search').value,tag:document.querySelector('input[name=tag]:checked').value};}
+  function currentFilters(){return {search:$('search').value,tag:activeTag};}
   function render(){
     const f=currentFilters();visible=filterSightings(items,f);$('gallery').replaceChildren();$('empty').hidden=items.length!==0;$('no-results').hidden=items.length===0||visible.length!==0;$('clear').hidden=!Object.values(f).some(Boolean);
     $('total').textContent=`${visible.length} sighting${visible.length===1?'':'s'}`;
-    $('result-count').textContent=items.length?`${visible.length} of ${items.length} sightings`:'';
+    $('result-count').textContent=items.length?(activeTag?`Filtered by ${activeTag}`:'Click an instrument tag to filter.'):'';
+    $('clear').textContent=activeTag?'Show all ×':'Clear ×';
     for(const item of visible){
       const {entry:e,sighting:s}=item;const button=node('button',undefined,'card');button.type='button';
       const frame=node('div',undefined,'card-image');const cover=s.media.find(m=>m.kind==='image'&&safeUrl(m.url))||s.media.find(m=>safeUrl(m.poster));
@@ -40,8 +42,8 @@ async function start(){
       button.append(frame,node('h3',e.title));button.addEventListener('click',()=>open(item,button));
       const article=node('article',undefined,'card-item'),meta=node('div',undefined,'card-meta');article.append(button);
       if(typeLabel(e))meta.append(node('span',typeLabel(e),'entry-type'));
-      if(tagLabel(s))meta.append(node('span',tagLabel(s),'tag'));
-      const filmUrl=safeUrl(e.filmUrl);if(filmUrl){const link=node('a',filmLabel(filmUrl),'film-link');link.href=filmUrl;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',`${e.title} on ${filmLabel(filmUrl).replace(' ↗','')}`);meta.append(link);}
+      if(tagLabel(s)){const tag=node('button',tagLabel(s),'tag tag-filter');tag.type='button';tag.setAttribute('aria-label',`Filter by ${tagLabel(s)}`);tag.setAttribute('aria-pressed',String(activeTag===brassTag(s)));tag.title=`Filter by ${tagLabel(s)}`;tag.addEventListener('click',()=>{activeTag=activeTag===brassTag(s)?'':brassTag(s);render();$('gallery').querySelector('.tag-filter')?.focus();});meta.append(tag);}
+      const filmUrl=safeUrl(e.filmUrl);if(filmUrl){const link=node('a',undefined,'film-link');setFilmLabel(link,filmUrl);link.href=filmUrl;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',`${e.title} on ${filmLabel(filmUrl).replace(' ↗','')}`);meta.append(link);}
       article.append(meta);$('gallery').append(article);
     }
   }
@@ -53,7 +55,7 @@ async function start(){
     $('detail-caption').textContent=[e.description,s.caption].filter(Boolean).join('\n\n');$('detail-caption').hidden=!$('detail-caption').textContent;
     $('detail-episode').textContent=[episode(e),s.timestamp].filter(Boolean).join(' · ');$('detail-episode').hidden=!$('detail-episode').textContent;
     $('detail-credit').textContent=s.credit?`Spotted by ${s.credit}`:'';$('detail-credit').hidden=!s.credit;
-    const filmUrl=safeUrl(e.filmUrl);$('detail-film').hidden=!filmUrl;$('detail-film').removeAttribute('href');if(filmUrl){$('detail-film').href=filmUrl;$('detail-film').textContent=filmLabel(filmUrl);}
+    const filmUrl=safeUrl(e.filmUrl);$('detail-film').hidden=!filmUrl;$('detail-film').removeAttribute('href');if(filmUrl){$('detail-film').href=filmUrl;setFilmLabel($('detail-film'),filmUrl);}
     const sourceUrl=safeUrl(s.sourceUrl);$('detail-source-link').hidden=!sourceUrl;$('detail-source-link').removeAttribute('href');if(sourceUrl)$('detail-source-link').href=sourceUrl;
     $('detail-source').textContent=s.sourceNote||'';$('detail-source').hidden=!s.sourceNote;
     $('detail-random').disabled=items.length<2;
@@ -68,7 +70,7 @@ async function start(){
   function move(step){const pool=visible.includes(active)?visible:items;if(!pool.length)return;open(pool[(pool.indexOf(active)+step+pool.length)%pool.length]);}
   $('previous').addEventListener('click',()=>move(-1));$('next').addEventListener('click',()=>move(1));$('close').addEventListener('click',()=>$('detail').close());$('detail').addEventListener('close',()=>{$('detail').querySelectorAll('video').forEach(v=>v.pause());history.replaceState(null,'',location.pathname+location.search);opener?.focus();});
   $('detail-random').addEventListener('click',()=>{const pool=items.filter(item=>item!==active);if(pool.length)open(pool[Math.floor(Math.random()*pool.length)]);});
-  $('filters').addEventListener('submit',e=>e.preventDefault());$('filters').addEventListener('input',render);$('clear').addEventListener('click',()=>{$('filters').reset();render();});
+  $('filters').addEventListener('submit',e=>e.preventDefault());$('filters').addEventListener('input',render);$('clear').addEventListener('click',()=>{$('filters').reset();activeTag='';render();});
   render();const hash=new URLSearchParams(location.hash.slice(1)).get('sighting');if(hash){const item=items.find(x=>x.sighting.id===hash);if(item)open(item);}
 }
 if(typeof document!=='undefined')start();

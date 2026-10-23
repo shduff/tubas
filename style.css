@@ -11,3 +11,6 @@ main{position:relative;z-index:1}
 @media(min-width:901px){.masthead{z-index:2}.header-horn{left:51%;top:-34px;z-index:0;transform:rotate(32deg)}}
 
 .photo-filter-defs{position:absolute;pointer-events:none;overflow:hidden}
+
+.tag-filter{border:1px solid var(--ink);border-radius:3px;box-shadow:1px 1px 0 var(--ink);cursor:pointer;min-height:28px;padding:6px 9px;transition:background 120ms ease}.tag-filter:hover{background:var(--gold)}.tag-filter[aria-pressed=true]{background:var(--ink);color:var(--paper);box-shadow:none}.external-arrow{white-space:pre}
+@media(max-width:580px){.film-link .external-arrow,#detail-film .external-arrow{display:none}}
