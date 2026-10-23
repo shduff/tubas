@@ -23,10 +23,10 @@ async function start(){
   try {const r=await fetch('data/catalog.json',{cache:'no-cache'});if(!r.ok)throw Error('Archive unavailable');catalog=await r.json();items=flatten(catalog.entries||[]);}catch{$('error').hidden=false;$('total').textContent='Archive temporarily unavailable';return;}
   const submissionUrl=safeUrl(catalog.submissionUrl);
   if(submissionUrl){document.querySelectorAll('[data-submit]').forEach(a=>{a.href=submissionUrl;a.target='_blank';a.rel='noopener noreferrer';a.hidden=false;});$('setup-note').hidden=true;}
-  $('total').textContent=`${items.length} sighting${items.length===1?'':'s'}`;
   function currentFilters(){return {search:$('search').value,tag:document.querySelector('input[name=tag]:checked').value};}
   function render(){
     const f=currentFilters();visible=filterSightings(items,f);$('gallery').replaceChildren();$('empty').hidden=items.length!==0;$('no-results').hidden=items.length===0||visible.length!==0;$('clear').hidden=!Object.values(f).some(Boolean);
+    $('total').textContent=`${visible.length} sighting${visible.length===1?'':'s'}`;
     $('result-count').textContent=items.length?`${visible.length} of ${items.length} sightings`:'';
     for(const item of visible){
       const {entry:e,sighting:s}=item;const button=node('button',undefined,'card');button.type='button';
