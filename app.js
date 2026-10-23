@@ -17,7 +17,7 @@ function node(tag, text, className) { const n=document.createElement(tag); if(te
 function typeLabel(e){return ['tv','movie','other'].includes(e.type)?e.type:'';}
 function tagLabel(s){return brassTag(s)==='non-tuba-brass'?'non-tuba-brass':brassTag(s);}
 function filmLabel(url){try{return /(^|\.)imdb\.com$/.test(new URL(url).hostname)?'IMDb':'Film info';}catch{return 'Film info';}}
-function setFilmLabel(link,url){link.replaceChildren(node('span',filmLabel(url)),node('span',' ↗','external-arrow'));}
+function setFilmLabel(link,url){link.replaceChildren(node('span',filmLabel(url)));}
 function episode(e){return [e.season ? `Season ${e.season}`:'',e.episode ? `Episode ${e.episode}`:'',e.episodeTitle].filter(Boolean).join(' · ');}
 async function start(){
   let catalog,items=[],visible=[],active=null,opener=null,activeTag='',activeType='';
@@ -47,7 +47,7 @@ async function start(){
         tag.setAttribute('aria-label',`Filter by ${value}`);tag.setAttribute('aria-pressed',String((field==='type'?activeType:activeTag)===value));
         tag.addEventListener('click',()=>{if(field==='type')activeType=activeType===value?'':value;else activeTag=activeTag===value?'':value;render();[...$('gallery').querySelectorAll('.tag-filter')].find(b=>b.dataset.filter===field&&b.dataset.value===value)?.focus();});meta.append(tag);
       }
-      const filmUrl=safeUrl(e.filmUrl);if(filmUrl){const link=node('a',undefined,'film-link');setFilmLabel(link,filmUrl);link.href=filmUrl;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',`${e.title} on ${filmLabel(filmUrl).replace(' ↗','')}`);meta.append(link);}
+      const filmUrl=safeUrl(e.filmUrl);if(filmUrl){const link=node('a',undefined,'film-link');setFilmLabel(link,filmUrl);link.href=filmUrl;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',`${e.title} on ${filmLabel(filmUrl)}`);meta.append(link);}
       article.append(meta);$('gallery').append(article);
     }
   }

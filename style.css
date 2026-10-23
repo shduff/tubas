@@ -21,3 +21,24 @@ main{position:relative;z-index:1}
 .project-description{position:relative;z-index:1;flex-basis:100%;margin:0;font-size:13px;line-height:1.65;color:var(--muted)}
 
 .project-description span{display:block;max-width:650px}
+
+/* Coral instrument floats over the collection, beneath header copy. */
+.masthead{isolation:auto;z-index:auto;overflow:visible}
+main{z-index:auto}
+.header-horn{color:#fac79f;opacity:1;z-index:2}
+.site-title,.project-description,.submit-link{z-index:3}
+.card h3,.card-meta,.section-heading,.results-bar{position:relative;z-index:3}
+.card-number{z-index:3}
+.filters{background:#fff9e2}
+.filters input[type=search]{position:relative;z-index:3;background:transparent}
+@media(min-width:901px){
+ .masthead{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(0,1fr);column-gap:30px;row-gap:16px;padding-top:48px;padding-bottom:22px;align-items:start}
+ .site-title{grid-column:1;grid-row:1 / 3;align-self:end}
+ .site-title strong{font-size:clamp(80px,8.7vw,130px)}
+ .submit-link{position:relative;top:auto;right:auto;grid-column:2;grid-row:1;justify-self:start;margin:0}
+ .project-description{grid-column:2;grid-row:2;align-self:end;margin:0 0 4px;font-size:clamp(13px,1.25vw,18px);line-height:1.55;color:var(--ink)}
+ .project-description span{max-width:none}
+ .header-horn{left:49%;top:-48px;width:650px;height:650px;transform:rotate(32deg)}
+}
+@media(min-width:581px) and (max-width:900px){.header-horn{left:49%;top:0;width:360px;height:360px;transform:rotate(32deg)}}
+@media(max-width:580px){.header-horn{color:#fac79f;opacity:1;z-index:2}.site-title,.project-description,.submit-link{z-index:3}.project-description{color:var(--ink)}}
