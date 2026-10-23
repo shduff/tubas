@@ -21,13 +21,13 @@ test('simplified form captures renamed email privately and publishes without a t
  const context=vm.createContext({SpreadsheetApp:{newRichTextValue:()=>({setText(){return this;},setLinkUrl(){return this;},build(){return {};}})}});vm.runInContext(source,context);
  let captured;
  context.sheet_=()=>({getDataRange:()=>({getValues:()=>[vm.runInContext('SAE.headers',context)]}),getMaxRows:()=>100,getRange:()=>({setValues:values=>{captured=values[0];},insertCheckboxes:()=>{},setRichTextValue:()=>{}})});
- const answers={Title:'Example film',Caption:'A bell in the background',Credit:'Friend','Contact email':'private@example.com','Anything else?':'Episode 2, around 12:30'};
+ const answers={Tag:'non-tuba-brass',Title:'Example film',Caption:'A bell in the background',Credit:'Friend','Contact email':'private@example.com','Anything else?':'Episode 2, around 12:30'};
  const responses=Object.entries(answers).map(([title,value])=>({getItem:()=>({getType:()=> 'TEXT',getTitle:()=>title}),getResponse:()=>value}));
  responses.push({getItem:()=>({getType:()=> 'FILE_UPLOAD'}),getResponse:()=>['drive-private-id']});
  context.captureResponse_({getId:()=> 'simplified-response',getTimestamp:()=>new Date('2026-10-22T00:00:00Z'),getItemResponses:()=>responses});
  const headers=vm.runInContext('SAE.headers',context),record=Object.fromEntries(headers.map((h,i)=>[h,captured[i]]));
- assert.equal(record.Type,undefined);assert.equal(record['Contact email'],'private@example.com');assert.equal(record['Anything else?'],'Episode 2, around 12:30');
- const p=publisher();p.run(record);assert.equal(p.commits[0].state.catalog.entries[0].type,'other');assert.ok(!JSON.stringify(p.commits).includes('private@example.com'));
+ assert.equal(record.Tag,'non-tuba-brass');assert.equal(record.Type,undefined);assert.equal(record['Contact email'],'private@example.com');assert.equal(record['Anything else?'],'Episode 2, around 12:30');
+ const p=publisher();p.run(record);assert.equal(p.commits[0].state.catalog.entries[0].sightings[0].tag,'non-tuba-brass');assert.equal(p.commits[0].state.catalog.entries[0].type,'other');assert.ok(!JSON.stringify(p.commits).includes('private@example.com'));
 });
 test('review sheet migration preserves published state, identity, media and private contact',()=>{
  const context=vm.createContext({});vm.runInContext(source,context);
@@ -66,3 +66,16 @@ test('ambiguous title metadata asks for explicit matching rather than duplicatin
  assert.throws(()=>p.run({...row,'Submission ID':'second',Year:''}),/Possible duplicate/);assert.equal(p.commits.length,0);
  const merged=publisher(catalog);merged.run({...row,'Submission ID':'second',Year:'','Existing entry ID':catalog.entries[0].id});assert.equal(merged.commits[0].state.catalog.entries.length,1);
 });
+
+
+test('published metadata sync updates only approved tags and valid film links',()=>{
+ const first=publisher();first.run(row);const catalog=first.commits[0].state.catalog;
+ const context=vm.createContext({LockService:{getScriptLock:()=>({tryLock:()=>true,releaseLock:()=>{}})},Utilities:{DigestAlgorithm:{SHA_256:1},Charset:{UTF_8:1},computeDigest:(_,value)=>[...crypto.createHash('sha256').update(value).digest()]}});vm.runInContext(source,context);
+ const headers=vm.runInContext('SAE.headers',context);const record={...row,Approved:true,Status:'Published',Tag:'non-tuba-brass','Film URL':'https://www.imdb.com/title/tt1234567/',Caption:'Do not overwrite public caption'};
+ context.sheet_=()=>({getDataRange:()=>({getValues:()=>[headers,headers.map(h=>record[h]??'')]})});context.loadCatalog_=()=>({catalog:structuredClone(catalog)});
+ let saved;context.commitCatalog_=state=>{saved=state.catalog;};context.syncPublicMetadata();
+ assert.equal(saved.entries[0].filmUrl,record['Film URL']);assert.equal(saved.entries[0].sightings[0].tag,'non-tuba-brass');assert.equal(saved.entries[0].sightings[0].caption,row.Caption);assert.ok(!JSON.stringify(saved).includes('private@example.com'));
+ record.Approved=false;saved=null;context.syncPublicMetadata();assert.equal(saved,null);
+ record.Approved=true;record.Tag='tuba';record['Film URL']='javascript:alert(1)';saved=null;context.syncPublicMetadata();assert.equal(saved,null);
+});
+test('new publication keeps approved category and film URL',()=>{const p=publisher();p.run({...row,Tag:'non-tuba-brass','Film URL':'https://www.imdb.com/title/tt1234567/'});assert.equal(p.commits[0].state.catalog.entries[0].filmUrl,'https://www.imdb.com/title/tt1234567/');assert.equal(p.commits[0].state.catalog.entries[0].sightings[0].tag,'non-tuba-brass');assert.throws(()=>publisher().run({...row,Tag:'bad'}),/Choose tuba/);});
