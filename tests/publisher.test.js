@@ -26,7 +26,7 @@ test('simplified form captures renamed email privately and publishes without a t
  responses.push({getItem:()=>({getType:()=> 'FILE_UPLOAD'}),getResponse:()=>['drive-private-id']});
  context.captureResponse_({getId:()=> 'simplified-response',getTimestamp:()=>new Date('2026-10-22T00:00:00Z'),getItemResponses:()=>responses});
  const headers=vm.runInContext('SAE.headers',context),record=Object.fromEntries(headers.map((h,i)=>[h,captured[i]]));
- assert.equal(record.Tag,'non-tuba-brass');assert.equal(record.Type,undefined);assert.equal(record['Contact email'],'private@example.com');assert.equal(record['Anything else?'],'Episode 2, around 12:30');
+ assert.equal(record.Tag,'non-tuba-brass');assert.equal(record.Type,'other');assert.equal(record['Contact email'],'private@example.com');assert.equal(record['Anything else?'],'Episode 2, around 12:30');
  const p=publisher();p.run(record);assert.equal(p.commits[0].state.catalog.entries[0].sightings[0].tag,'non-tuba-brass');assert.equal(p.commits[0].state.catalog.entries[0].type,'other');assert.ok(!JSON.stringify(p.commits).includes('private@example.com'));
 });
 test('review sheet migration preserves published state, identity, media and private contact',()=>{
@@ -79,3 +79,5 @@ test('published metadata sync updates only approved tags and valid film links',(
  record.Approved=true;record.Tag='tuba';record['Film URL']='javascript:alert(1)';saved=null;context.syncPublicMetadata();assert.equal(saved,null);
 });
 test('new publication keeps approved category and film URL',()=>{const p=publisher();p.run({...row,Tag:'non-tuba-brass','Film URL':'https://www.imdb.com/title/tt1234567/'});assert.equal(p.commits[0].state.catalog.entries[0].filmUrl,'https://www.imdb.com/title/tt1234567/');assert.equal(p.commits[0].state.catalog.entries[0].sightings[0].tag,'non-tuba-brass');assert.throws(()=>publisher().run({...row,Tag:'bad'}),/Choose tuba/);});
+
+test('compact type choices publish television without requiring an episode',()=>{for(const type of ['tv','movie','other']){const p=publisher();p.run({...row,Type:type});assert.equal(p.commits[0].state.catalog.entries[0].type,type);}assert.throws(()=>publisher().run({...row,Type:'invalid'}),/Choose tv/);});
