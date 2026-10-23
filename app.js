@@ -20,6 +20,7 @@ export function filterSightings(items, filters) {
     (!filters.tag || brassTag(s) === filters.tag) && (!q || [e.title,e.episodeTitle,e.description,s.caption,s.credit,s.sourceNote,...(s.instruments||[])].join(' ').toLowerCase().includes(q)));
 }
 function node(tag, text, className) { const n=document.createElement(tag); if(text!==undefined)n.textContent=text;if(className)n.className=className;return n; }
+function typeLabel(e){return ['tv','movie','other'].includes(e.type)?e.type:'';}
 function tagLabel(s){return brassTag(s)==='non-tuba-brass'?'non-tuba-brass':brassTag(s);}
 function filmLabel(url){try{return /(^|\.)imdb\.com$/.test(new URL(url).hostname)?'IMDb ↗':'Film info ↗';}catch{return 'Film info ↗';}}
 function episode(e){return [e.season ? `Season ${e.season}`:'',e.episode ? `Episode ${e.episode}`:'',e.episodeTitle].filter(Boolean).join(' · ');}
@@ -44,6 +45,7 @@ async function start(){
       if(s.media.length>1||s.media.some(m=>m.kind==='video'))frame.append(node('span',s.media.some(m=>m.kind==='video')?'▶ CLIP':`${s.media.length} IMAGES`,'card-badge'));
       button.append(frame,node('h3',e.title));button.addEventListener('click',()=>open(item,button));
       const article=node('article',undefined,'card-item'),meta=node('div',undefined,'card-meta');article.append(button);
+      if(typeLabel(e))meta.append(node('span',typeLabel(e),'entry-type'));
       if(tagLabel(s))meta.append(node('span',tagLabel(s),'tag'));
       const filmUrl=safeUrl(e.filmUrl);if(filmUrl){const link=node('a',filmLabel(filmUrl),'film-link');link.href=filmUrl;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',`${e.title} on ${filmLabel(filmUrl).replace(' ↗','')}`);meta.append(link);}
       article.append(meta);$('gallery').append(article);
@@ -52,6 +54,7 @@ async function start(){
   function open(item,source){
     active=item;if(source)opener=source;const {entry:e,sighting:s}=item;
     $('detail-title').textContent=e.title;
+    $('detail-type').textContent=typeLabel(e);$('detail-type').hidden=!typeLabel(e);
     $('detail-tag').textContent=tagLabel(s);$('detail-tag').hidden=!tagLabel(s);
     $('detail-caption').textContent=[e.description,s.caption].filter(Boolean).join('\n\n');$('detail-caption').hidden=!$('detail-caption').textContent;
     $('detail-episode').textContent=[episode(e),s.timestamp].filter(Boolean).join(' · ');$('detail-episode').hidden=!$('detail-episode').textContent;
