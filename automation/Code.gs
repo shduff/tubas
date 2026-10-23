@@ -8,7 +8,7 @@ const SAE = {
   maxSubmissionBytes: 20 * 1024 * 1024,
   headers: ['Approved', 'Status', 'Title', 'Images or clips', 'Caption', 'Credit',
     'Contact email', 'Anything else?', 'Published URL', 'Last error',
-    'Submission ID', 'Submitted', 'File IDs (private)', 'Existing entry ID', 'Tag', 'Film URL'],
+    'Submission ID', 'Submitted', 'File IDs (private)', 'Existing entry ID', 'Tag', 'Film URL', 'Type'],
   genres: ['Action', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
     'Horror', 'Musical', 'Mystery', 'Romance', 'Science fiction', 'Thriller', 'Western', 'Other'],
   instruments: ['Sousaphone', 'Tuba', 'Euphonium', 'Baritone horn', 'Uncertain']
@@ -51,7 +51,7 @@ function setup() {
     sheet.getRange(2, 3, sheet.getMaxRows() - 1, SAE.headers.length - 2).setNumberFormat('@');
     sheet.setColumnWidths(1, SAE.headers.length, 150);
     sheet.setColumnWidth(3, 230); sheet.setColumnWidth(5, 320);
-    sheet.hideColumns(9, 6);
+    sheet.hideColumns(11, 4);
   }
   // Also configure a review queue imported from the prepared workbook.
   sheet.getRange(2, 1, sheet.getMaxRows() - 1, 1).setDataValidation(
@@ -65,6 +65,7 @@ function setup() {
     form.setCollectEmail(false).setLimitOneResponsePerUser(false);
     form.setConfirmationMessage('Thanks for keeping your eyes open! Your sighting is in the private review queue.');
     form.addTextItem().setTitle('Title').setHelpText('Movie title, or show name for television.').setRequired(true);
+    form.addMultipleChoiceItem().setTitle('Type').setChoiceValues(['tv','movie','other']);
     form.addMultipleChoiceItem().setTitle('Tag').setChoiceValues(['tuba','non-tuba-brass']).setHelpText('Tuba includes sousaphones. Non-tuba-brass includes euphoniums, baritones, and other brass.').setRequired(true);
     form.addParagraphTextItem().setTitle('Caption').setHelpText('Where is the instrument? Context, commentary, and jokes welcome.');
     form.addTextItem().setTitle('Credit').setHelpText('Optional name or handle to show publicly.');
@@ -94,7 +95,7 @@ function captureResponse_(response) {
       (Array.isArray(result) ? result : [result]).filter(Boolean).forEach(f => files.push(String(f)));
     } else { const v = r.getResponse(); answers[r.getItem().getTitle()] = Array.isArray(v) ? v.join(', ') : String(v || ''); }
   });
-  answers.Type = answers.Type || 'Other';
+  answers.Type = mediaType_(answers.Type);
   answers.Tag = brassTag_(answers.Tag || 'tuba');
   answers['Contact email'] = answers['Contact email'] || answers.Email || answers['Contact email (private)'] || '';
   answers['Anything else?'] = answers['Anything else?'] || answers['Source note'] || '';
@@ -183,9 +184,7 @@ function publishApproved() {
 }
 function publishRow_(r) {
   if (!String(r.Title || '').trim()) throw new Error('A title is required.');
-  const types = {'Movie':'movie','TV episode':'tv','Other':'other'};
-  const type = types[r.Type || 'Other']; if (!type) throw new Error('Choose Movie, TV episode, or Other in Type.');
-  if (type === 'tv' && !String(r.Episode || '').trim() && !String(r['Episode title'] || '').trim()) throw new Error('Identify the episode with an episode title or number before publishing.');
+  const type = mediaType_(r.Type);
   const year = String(r.Year || '').trim();
   if (year && !/^\d{4}$/.test(year)) throw new Error('Year must be four digits or blank.');
   const tag = brassTag_(r.Tag || 'tuba');
@@ -277,7 +276,7 @@ function configureBrassTags() {
   console.log('Required brass tag added; published tags and film links sync hourly.');
 }
 
-// Only these two public fields may change after publication. Other review content remains immutable.
+// Only these public metadata fields may change after publication. Other review content remains immutable.
 function syncPublicMetadata() {
   const lock = LockService.getScriptLock(); if (!lock.tryLock(1000)) return;
   try {
@@ -293,10 +292,43 @@ function syncPublicMetadata() {
         const sighting = (entry.sightings || []).find(s => s.id === id);
         if (!sighting) continue;
         const tag = String(r.Tag || '').trim(), filmUrl = safeSource_(r['Film URL']);
+        if (String(r.Type || '').trim()) { const type = mediaType_(r.Type); if (entry.type !== type) { entry.type = type; changed = true; } }
         if (['tuba','non-tuba-brass'].includes(tag) && sighting.tag !== tag) { sighting.tag = tag; changed = true; }
         if (filmUrl && entry.filmUrl !== filmUrl) { entry.filmUrl = filmUrl; changed = true; }
       }
     });
     if (changed) commitCatalog_(state, [], 'Sync approved brass tags and film links');
   } finally { lock.releaseLock(); }
+}
+
+// Accept the earlier form labels as well as the compact current choices.
+function mediaType_(value) {
+  const label = String(value || 'other').trim().toLowerCase();
+  const type = {'tv':'tv','tv episode':'tv','movie':'movie','other':'other'}[label];
+  if (!type) throw new Error('Choose tv, movie, or other in Type.');
+  return type;
+}
+
+// Run after installing this upgrade to connect the form and append the review column.
+function configureMediaTypes() {
+  const sheet = sheet_();
+  if (sheet.getMaxColumns() < SAE.headers.length) sheet.insertColumnsAfter(sheet.getMaxColumns(), SAE.headers.length - sheet.getMaxColumns());
+  const headers = sheet.getRange(1, 1, 1, SAE.headers.length).getValues()[0];
+  if (headers[SAE.headers.length - 1] && headers[SAE.headers.length - 1] !== 'Type') throw new Error('The new Type column is already occupied.');
+  sheet.getRange(1, SAE.headers.length).setValue('Type');
+  sheet.getRange(2, SAE.headers.length, sheet.getMaxRows() - 1, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList(['tv','movie','other'], true).setAllowInvalid(false).build());
+  const values = sheet.getDataRange().getValues();
+  values.slice(1).forEach((row,i) => {
+    if (row[2] === 'Freaks and Geeks') sheet.getRange(i+2, SAE.headers.length).setValue('tv');
+    if (['camera person','a hidden life'].includes(String(row[2]).toLowerCase())) sheet.getRange(i+2, SAE.headers.length).setValue('movie');
+  });
+  const form = FormApp.openById(props_().getProperty('FORM_ID'));
+  const existing = form.getItems().find(i => i.getTitle() === 'Type');
+  const item = existing ? existing.asMultipleChoiceItem() : form.addMultipleChoiceItem().setTitle('Type');
+  item.setChoiceValues(['tv','movie','other']).setRequired(false);
+  const title = form.getItems().find(i => i.getTitle() === 'Title');
+  if (title && item.getIndex() !== title.getIndex() + 1) form.moveItem(item.getIndex(), title.getIndex() + 1);
+  if (!ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'syncPublicMetadata')) ScriptApp.newTrigger('syncPublicMetadata').timeBased().everyHours(1).create();
+  syncPublicMetadata();
 }
