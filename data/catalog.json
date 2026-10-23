@@ -26,9 +26,11 @@
               "url": "media/s-39d456441c79e742cf33/01.jpg",
               "alt": "tuba girl"
             }
-          ]
+          ],
+          "tag": "tuba"
         }
-      ]
+      ],
+      "filmUrl": "https://www.imdb.com/title/tt0193676/"
     },
     {
       "id": "e-7248c52ff219e0e81fcc",
@@ -54,9 +56,11 @@
               "url": "media/s-aaaa897041063813edab/01.jpg",
               "alt": "Low brass spotted in camera person"
             }
-          ]
+          ],
+          "tag": "tuba"
         }
-      ]
+      ],
+      "filmUrl": "https://www.imdb.com/title/tt5375040/"
     },
     {
       "id": "e-d8d2e1ebfb9289331bab",
@@ -82,9 +86,11 @@
               "url": "media/s-fcc440b0e7200aa9000b/01.jpg",
               "alt": "Low brass spotted in a hidden life"
             }
-          ]
+          ],
+          "tag": "tuba"
         }
-      ]
+      ],
+      "filmUrl": "https://www.imdb.com/title/tt5827916/"
     }
   ]
 }

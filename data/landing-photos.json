@@ -1,0 +1,51 @@
+[
+  {
+    "title": "Police tuba players",
+    "image": "assets/police-tubas.jpg",
+    "source": "https://www.loc.gov/pictures/resource/ggbain.37900/",
+    "credit": "Bain News Service / Library of Congress",
+    "license": "No known publication restrictions.",
+    "alt": "Five musicians with a lineup of tubas and sousaphones",
+    "enabled": true
+  },
+  {
+    "title": "Sousaphone player in Armstrong Park, circa 1987",
+    "image": "assets/armstrong-park.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Sousaphone_player_in_Armstrong_Park,_New_Orleans.jpg",
+    "credit": "Kocker; Alvarez; Alan Robinson / National Park Service",
+    "license": "Public domain (U.S. government work).",
+    "alt": "A sousaphone player in Armstrong Park, New Orleans",
+    "enabled": true
+  },
+  {
+    "title": "M\u00fasicos en Tlahuitoltepec, 1956",
+    "image": "assets/rulfo-musicians.jpg",
+    "source": "https://museoamparo.com/exposiciones/pieza/1999/musicos-en-tlahuitoltepec",
+    "credit": "Juan Rulfo / Museo Amparo",
+    "license": "CC BY-NC-SA 4.0, as stated by Museo Amparo: https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "treatment": "Display cropped to fit the header.",
+    "alt": "Sousaphone player and drummer in Tlahuitoltepec, Oaxaca",
+    "enabled": true
+  },
+  {
+    "title": "Sousaphone Player in Barnyard",
+    "source": "https://www.wisconsinhistory.org/record/image/W014A9S/sousaphone-player-in-barnyard",
+    "credit": "John Newhouse / Wisconsin Historical Society / Wisconsin State Journal",
+    "enabled": false,
+    "rights": "Written permission required for website use."
+  },
+  {
+    "title": "Pigs at Mare Hill Farm, December 1953",
+    "source": "https://www.mediastorehouse.com/west-sussex-county-council/west-sussex-record-office/george-garland/pigs-mare-hill-farm-december-1953-6848191.html",
+    "credit": "George Garland / West Sussex Record Office",
+    "enabled": false,
+    "rights": "Website reproduction license not established."
+  },
+  {
+    "title": "Cooter in the Corn with Horn, 1996",
+    "source": "https://www.swanngalleries.com/auction-lot/spencer-jack-1951-cooter-in-the-corn-with-h_5C62B77B04",
+    "credit": "Jack Spencer",
+    "enabled": false,
+    "rights": "Website reproduction permission not established."
+  }
+]
