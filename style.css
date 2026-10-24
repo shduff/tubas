@@ -44,7 +44,7 @@ main{z-index:auto}
 @media(max-width:580px){.header-horn{color:#fac79f;opacity:1;z-index:2}.site-title,.project-description,.submit-link{z-index:3}.project-description{color:var(--ink)}}
 
 @media(min-width:901px){
- .site-title strong{font-size:clamp(100px,11vw,165px)}
+ .site-title strong{font-size:clamp(100px,10.2vw,153px)}
  .site-title span{font-size:clamp(40px,4.8vw,68px)}
  .header-horn{left:43%;top:-100px}
 }
