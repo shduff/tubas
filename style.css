@@ -49,3 +49,7 @@ main{z-index:auto}
  .header-horn{left:43%;top:-100px}
 }
 body{overflow-x:clip}
+
+.project-description{text-align:justify;text-align-last:left}
+@media(min-width:901px){.submit-link{justify-self:end;transform:translateY(8px)}}
+@media(max-width:900px){.submit-link{transform:translateY(8px)}}
