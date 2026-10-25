@@ -91,6 +91,35 @@
         }
       ],
       "filmUrl": "https://www.imdb.com/title/tt5827916/"
+    },
+    {
+      "id": "e-0332d6ddc98deccb56b8",
+      "title": "Home Alone 2",
+      "type": "movie",
+      "year": "",
+      "season": "",
+      "episode": "",
+      "episodeTitle": "",
+      "genres": [],
+      "sightings": [
+        {
+          "id": "s-d80819bfcf3a631d905d",
+          "tag": "tuba",
+          "instruments": [],
+          "timestamp": "",
+          "caption": "",
+          "credit": "",
+          "sourceNote": "",
+          "sourceUrl": "",
+          "media": [
+            {
+              "kind": "image",
+              "url": "media/s-d80819bfcf3a631d905d/01.jpg",
+              "alt": "Low brass spotted in Home Alone 2"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
