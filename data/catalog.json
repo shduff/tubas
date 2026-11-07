@@ -121,6 +121,35 @@
         }
       ],
       "filmUrl": "https://www.imdb.com/title/tt0104431/"
+    },
+    {
+      "id": "e-fcf6d7324e4dc6862a8c",
+      "title": "Columbo",
+      "type": "tv",
+      "year": "",
+      "season": "",
+      "episode": "",
+      "episodeTitle": "",
+      "genres": [],
+      "sightings": [
+        {
+          "id": "s-06778e9bf5552dc90a5b",
+          "tag": "tuba",
+          "instruments": [],
+          "timestamp": "",
+          "caption": "One of the cheesiest scenes from the entire Columbo run.",
+          "credit": "kemonlemon",
+          "sourceNote": "Season 8, Episode 3 \"Sex and the Married Detective.\"",
+          "sourceUrl": "",
+          "media": [
+            {
+              "kind": "image",
+              "url": "media/s-06778e9bf5552dc90a5b/01.png",
+              "alt": "One of the cheesiest scenes from the entire Columbo run."
+            }
+          ]
+        }
+      ]
     }
   ]
 }
