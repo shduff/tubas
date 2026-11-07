@@ -150,6 +150,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "e-08c4614e2023c2b0b831",
+      "title": "Shortbus",
+      "type": "movie",
+      "year": "",
+      "season": "",
+      "episode": "",
+      "episodeTitle": "",
+      "genres": [],
+      "sightings": [
+        {
+          "id": "s-a051253ffa7ee2336a72",
+          "tag": "tuba",
+          "instruments": [],
+          "timestamp": "",
+          "caption": "Hungry March Band appears near the end of this underground classic",
+          "credit": "kemonlemon",
+          "sourceNote": "The famous Joe Tuba is playing",
+          "sourceUrl": "",
+          "media": [
+            {
+              "kind": "image",
+              "url": "media/s-a051253ffa7ee2336a72/01.png",
+              "alt": "Hungry March Band appears near the end of this underground classic"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
