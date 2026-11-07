@@ -179,6 +179,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "e-955f799d92154172670e",
+      "title": "The Office",
+      "type": "tv",
+      "year": "",
+      "season": "",
+      "episode": "",
+      "episodeTitle": "",
+      "genres": [],
+      "sightings": [
+        {
+          "id": "s-bf36a150d06db3181bba",
+          "tag": "tuba",
+          "instruments": [],
+          "timestamp": "",
+          "caption": "",
+          "credit": "",
+          "sourceNote": "Season 9, episode 18",
+          "sourceUrl": "",
+          "media": [
+            {
+              "kind": "image",
+              "url": "media/s-bf36a150d06db3181bba/01.jpg",
+              "alt": "Low brass spotted in The Office"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
