@@ -235,6 +235,28 @@
               "alt": "Low brass spotted in amarcord "
             }
           ]
+        },
+        {
+          "id": "s-8797bf217751e2b56a34",
+          "tag": "tuba",
+          "instruments": [],
+          "timestamp": "",
+          "caption": "",
+          "credit": "",
+          "sourceNote": "",
+          "sourceUrl": "",
+          "media": [
+            {
+              "kind": "image",
+              "url": "media/s-8797bf217751e2b56a34/01.jpg",
+              "alt": "Low brass spotted in amarcord"
+            },
+            {
+              "kind": "image",
+              "url": "media/s-8797bf217751e2b56a34/02.jpg",
+              "alt": "Low brass spotted in amarcord"
+            }
+          ]
         }
       ]
     }
