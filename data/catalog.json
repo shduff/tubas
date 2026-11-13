@@ -208,6 +208,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "e-94bd8492344cfb781d7b",
+      "title": "amarcord",
+      "type": "movie",
+      "year": "",
+      "season": "",
+      "episode": "",
+      "episodeTitle": "",
+      "genres": [],
+      "sightings": [
+        {
+          "id": "s-00bc8265c05763fbe60c",
+          "tag": "tuba",
+          "instruments": [],
+          "timestamp": "",
+          "caption": "",
+          "credit": "",
+          "sourceNote": "",
+          "sourceUrl": "",
+          "media": [
+            {
+              "kind": "image",
+              "url": "media/s-00bc8265c05763fbe60c/01.jpg",
+              "alt": "Low brass spotted in amarcord "
+            }
+          ]
+        }
+      ]
     }
   ]
 }
