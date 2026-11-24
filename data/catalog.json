@@ -242,6 +242,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "e-6e0a5c0106f628fe6c3b",
+      "title": "tea and sympathy",
+      "type": "movie",
+      "year": "",
+      "season": "",
+      "episode": "",
+      "episodeTitle": "",
+      "genres": [],
+      "sightings": [
+        {
+          "id": "s-fd920090455a933571e9",
+          "tag": "tuba",
+          "instruments": [],
+          "timestamp": "",
+          "caption": "",
+          "credit": "",
+          "sourceNote": "",
+          "sourceUrl": "",
+          "media": [
+            {
+              "kind": "image",
+              "url": "media/s-fd920090455a933571e9/01.jpg",
+              "alt": "Low brass spotted in tea and sympathy"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
